@@ -147,6 +147,6 @@ AUTH_API = 'https://recruitment.fisdev.com/api/login/'
 
 INFO_SUBMIT_API_TEST = 'https://recruitment.fisdev.com/api/v0/recruiting-entities/'
 
-INFO_SUBMIT_API_FINAL = 'https://recruitment.fisdev.com/api/v1/recruitingentities/'
+INFO_SUBMIT_API_FINAL = 'https://recruitment.fisdev.com/api/v1/recruiting-entities/'
 
 FILE_UPLOAD_API = 'https://recruitment.fisdev.com/api/file-object/{FILE_TOKEN_ID}/'

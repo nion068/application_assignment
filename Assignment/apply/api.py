@@ -29,8 +29,8 @@ def submit_details(auth_token, name, email, phone, full_address, name_of_univers
     uuid_details = str(uuid.uuid4())
     uuid_cv_file = str(uuid.uuid4())
     creation_time = str(int(time.time() * 1000))
-    url = settings.INFO_SUBMIT_API_TEST
-    # url = settings.INFO_SUBMIT_API_FINAL
+    # url = settings.INFO_SUBMIT_API_TEST
+    url = settings.INFO_SUBMIT_API_FINAL
     header = {
         "Content-Type": "application/json",
         "Authorization": token
