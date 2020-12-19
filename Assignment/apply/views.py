@@ -2,8 +2,7 @@ from django.shortcuts import render
 from django.conf import settings
 from django.http import HttpResponseRedirect, HttpRequest
 from .forms import AuthenticationForm, DetailsForm
-from .api import authenticate
-from django.core.files.storage import FileSystemStorage
+from .api import authenticate, submit_details, file_upload_handler
 
 def login(request):
     # authenticate username and password, returns login view
@@ -41,12 +40,13 @@ def login(request):
         return render(request, 'apply/login.html', context)
 
 def details(request):
-    print(request.session.get('token'))
     # submit the details to the server, returns the application form
+    print(request.session.get('token'))
     if request.method == 'POST':
         details_form = DetailsForm(request.POST, request.FILES)
         if details_form.is_valid():
-            print('data valid')
+            print('Data Valid')
+            auth_token = request.session.get('token')
             name = details_form.cleaned_data['name']
             email = details_form.cleaned_data['email']
             phone = details_form.cleaned_data['phone']
@@ -61,23 +61,31 @@ def details(request):
             field_buzz_reference = details_form.cleaned_data['field_buzz_reference']
             github_project_url = details_form.cleaned_data['github_project_url']
             cv_file = request.FILES['cv_file']
-            # fs = FileSystemStorage()
-            # filename = fs.save(cv_file.name, cv_file)
-            # print(cv_file)
-            print(cv_file.name)
-            print(name)
-            print(email)
-            print(phone)
-            print(full_address)
-            print(name_of_university)
-            print(graduation_year)
-            print(cgpa)
-            print(experience_in_months)
-            print(current_work_place_name)
-            print(applying_in)
-            print(expected_salary)
-            print(field_buzz_reference)
-            print(github_project_url)
+
+            details_response = submit_details(auth_token, name, email, phone, full_address, name_of_university, graduation_year, cgpa, experience_in_months, current_work_place_name, applying_in, expected_salary, field_buzz_reference, github_project_url)
+            # check responses for different cases
+            if details_response is None:
+                print("Something error occured in details submission")
+                return render(request, 'apply/details.html', {'form': details_form})
+            elif details_response['success'] is False:
+                print("Submission failed")
+                return render(request, 'apply/details.html', {'form': details_form})
+            else:
+                print("Details Submission successful")
+                file_token_id = details_response['cv_file']['id']
+                print("file_token_id =  " + str(file_token_id))
+                file_upload_response = file_upload_handler(auth_token, file_token_id, cv_file)
+                #check responses
+                if file_upload_response is None:
+                    print("Something error occured in file upload")
+                    return render(request, 'apply/details.html', {'form': details_form})
+                elif file_upload_response['success'] is False:
+                    print("File upload failed")
+                    return render(request, 'apply/details.html', {'form': details_form})
+                else:
+                    print("File upload successfull. Let's cross fingers.")
+                    return render(request, 'apply/details.html', {'form': details_form})
+            
         else:
             print('Data Invalid')
             print(details_form.errors)
