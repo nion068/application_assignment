@@ -123,3 +123,21 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Restrictions
+
+MAX_FILE_SIZE = 4194304     # 4 MB
+
+# API URLs
+
+AUTH_API = 'https://recruitment.fisdev.com/api/login/'
+
+INFO_SUBMIT_API_TEST = 'https://recruitment.fisdev.com/api/v0/recruiting-entities/'
+
+INFO_SUBMIT_API_FINAL = 'https://recruitment.fisdev.com/api/v1/recruitingentities/'
+
+FILE_UPLOAD_API = 'https://recruitment.fisdev.com/api/file-object/{FILE_TOKEN_ID}/'
