@@ -3,6 +3,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect, HttpRequest
 from .forms import AuthenticationForm, DetailsForm
 from .api import authenticate, submit_details, file_upload_handler
+from .decorators import login_required
 
 def login(request):
     # authenticate username and password, returns login view
@@ -39,13 +40,14 @@ def login(request):
         }
         return render(request, 'apply/login.html', context)
 
+@login_required
 def details(request):
     # submit the details to the server, returns the application form
-    print(request.session.get('token'))
+    # print(request.session.get('token'))
     if request.method == 'POST':
         details_form = DetailsForm(request.POST, request.FILES)
         if details_form.is_valid():
-            print('Data Valid')
+            # print('Data Valid')
             auth_token = request.session.get('token')
             name = details_form.cleaned_data['name']
             email = details_form.cleaned_data['email']
@@ -65,11 +67,17 @@ def details(request):
             details_response = submit_details(auth_token, name, email, phone, full_address, name_of_university, graduation_year, cgpa, experience_in_months, current_work_place_name, applying_in, expected_salary, field_buzz_reference, github_project_url)
             # check responses for different cases
             if details_response is None:
-                print("Something error occured in details submission")
-                return render(request, 'apply/details.html', {'form': details_form})
+                context = {
+                    'form': details_form, 
+                    'message': 'Something error occured in details submission'
+                }
+                return render(request, 'apply/details.html', context)
             elif details_response['success'] is False:
-                print("Submission failed")
-                return render(request, 'apply/details.html', {'form': details_form})
+                context = {
+                    'form': details_form, 
+                    'message': 'Information Submission failed'
+                }
+                return render(request, 'apply/details.html', context)
             else:
                 print("Details Submission successful")
                 file_token_id = details_response['cv_file']['id']
@@ -78,22 +86,34 @@ def details(request):
                 #check responses
                 if file_upload_response is None:
                     print("Something error occured in file upload")
-                    return render(request, 'apply/details.html', {'form': details_form})
+                    context = {
+                        'form': details_form, 
+                        'message': 'Something error occured in file upload'
+                    }
+                    return render(request, 'apply/details.html', context)
                 elif file_upload_response['success'] is False:
                     print("File upload failed")
-                    return render(request, 'apply/details.html', {'form': details_form})
+                    context = {
+                        'form': details_form, 
+                        'message': 'Something error occured in file upload'
+                    }
+                    return render(request, 'apply/details.html', context)
                 else:
                     print("File upload successfull. Let's cross fingers.")
-                    return render(request, 'apply/details.html', {'form': details_form})
+                    return HttpResponseRedirect('success')
             
         else:
             print('Data Invalid')
-            print(details_form.errors)
-        return render(request, 'apply/details.html', {'form': details_form})
+            # print(details_form.errors)
+            return render(request, 'apply/details.html', {'form': details_form})
     else:
         details_form = DetailsForm()
         context = {
             'form': details_form
         }
         return render(request, 'apply/details.html', context)
-    
+
+@login_required
+def success(request):
+    # a simple page for successful submission
+    return render(request, 'apply/success.html')    

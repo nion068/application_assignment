@@ -1,7 +1,6 @@
 from django.conf import settings
 import requests, uuid, time
 from django.core.files.storage import FileSystemStorage
-import os
 
 def authenticate(username, password):
     # Authenticate username and password using specified API

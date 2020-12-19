@@ -11,6 +11,9 @@
     <div class="container">
         {{ form.as_p }}
     </div>
+    {% if message %}
+            <p><strong>{{ message }}</strong></p>
+    {% endif %}
     <button type="submit">Submit</button>
     </div>
     </form>
