@@ -10,6 +10,9 @@
     <hr/>
     <div class="container">
         {{ form }}
+        {% if message %}
+            <p><strong>{{ message }}</strong></p>
+        {% endif %}
     </div>
     <button type="submit">Login</button>
     </form>

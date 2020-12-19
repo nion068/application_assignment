@@ -1,6 +1,8 @@
 from django.shortcuts import render
+from django.conf import settings
 from django.http import HttpResponseRedirect, HttpRequest
 from .forms import AuthenticationForm, DetailsForm
+from .api import authenticate
 from django.core.files.storage import FileSystemStorage
 
 def login(request):
@@ -10,8 +12,27 @@ def login(request):
         if auth_form.is_valid():
             username = auth_form.cleaned_data['user_name']
             password = auth_form.cleaned_data['password']
-            
-            return HttpResponseRedirect('details')
+            auth_response = authenticate(username, password)
+            # check the response for different cases
+            if auth_response is None:
+                context = {
+                    'form': auth_form,
+                    'message': 'Something Error Occured'
+                }
+                return render(request, 'apply/login.html', context)
+            elif auth_response['success'] is True:
+                # set token expiration time
+                request.session.set_expiry(settings.SESSION_TIMEOUT)
+                # store token in session
+                request.session['token'] = auth_response['token']
+                print("Authentication successfull")
+                return HttpResponseRedirect('details')
+            else:
+                context = {
+                    'form': auth_form,
+                    'message': auth_response['message']
+                }    
+                return render(request, 'apply/login.html', context)
     else:
         auth_form = AuthenticationForm()
         context = {
@@ -20,6 +41,7 @@ def login(request):
         return render(request, 'apply/login.html', context)
 
 def details(request):
+    print(request.session.get('token'))
     # submit the details to the server, returns the application form
     if request.method == 'POST':
         details_form = DetailsForm(request.POST, request.FILES)
@@ -39,9 +61,9 @@ def details(request):
             field_buzz_reference = details_form.cleaned_data['field_buzz_reference']
             github_project_url = details_form.cleaned_data['github_project_url']
             cv_file = request.FILES['cv_file']
-            fs = FileSystemStorage()
-            filename = fs.save(cv_file.name, cv_file)
-            print(cv_file)
+            # fs = FileSystemStorage()
+            # filename = fs.save(cv_file.name, cv_file)
+            # print(cv_file)
             print(cv_file.name)
             print(name)
             print(email)

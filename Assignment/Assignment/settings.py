@@ -128,6 +128,10 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Time to expire session
+
+SESSION_TIMEOUT = 600       # seconds
+
 # Restrictions
 
 MAX_FILE_SIZE = 4194304     # 4 MB
